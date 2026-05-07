@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  /* Wispr-inspired warm-light palette. Olive/sage is an accent, not the
+     dominant color. Backgrounds are warm off-white; ink is dark warm grey. */
+  --background: #f3efe7;          /* warm off-white */
+  --background-elev: #f9f6ef;     /* lighter cream — cards */
+  --background-elev-2: #ffffff;   /* pure white — innermost surfaces */
+  --background-overlay: rgba(20, 18, 14, 0.32);
+  --border: #e3dccd;              /* warm grey */
+  --border-strong: #d3cab8;
+  --foreground: #1f1d1a;          /* near-black with warm undertone */
+  --muted: #6f6a62;               /* medium warm grey */
+  --muted-2: #9a948b;
+
+  /* Accents */
+  --accent: #3f5755;              /* deep sage/teal — primary accent */
+  --accent-soft: #d8e4dd;
+  --accent-foreground: #ffffff;
+  --olive: #8b9468;               /* muted olive — secondary accent */
+  --olive-soft: #d6dcc4;
+
+  /* Status colors tuned for a light background */
+  --status-slate: #6b7280;
+  --status-slate-soft: #e2e5e9;
+  --status-sky: #2b6f86;
+  --status-sky-soft: #d6e7ec;
+  --status-violet: #6b5694;
+  --status-violet-soft: #e3dceb;
+  --status-amber: #946821;
+  --status-amber-soft: #f4e6c9;
+  --status-emerald: #2f7a5c;
+  --status-emerald-soft: #d4e8df;
+  --status-rose: #a04249;
+  --status-rose-soft: #f0d8da;
+  --status-lime: #5a7a2e;
+  --status-lime-soft: #e1ebcd;
+  --status-green: #2d6c3a;
+  --status-green-soft: #d0e3d3;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-elev: var(--background-elev);
+  --color-background-elev-2: var(--background-elev-2);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-olive: var(--olive);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Subtle radial wash for the auth/login page — keeps the warm aesthetic */
+.gradient-mesh {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(63, 87, 85, 0.12), transparent 38%),
+    radial-gradient(circle at 100% 0%, rgba(139, 148, 104, 0.1), transparent 42%),
+    radial-gradient(circle at 50% 100%, rgba(214, 220, 196, 0.4), transparent 50%);
+}
+
+/* Keyframes for entrance + drawer animation */
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in { animation: fade-in 220ms ease-out both; }
+.animate-scale-in { animation: scale-in 180ms ease-out both; }
+
+/* Thin warm scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }
