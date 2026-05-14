@@ -86,11 +86,17 @@ export default async function VideoPage({
               updated {timeAgo(v.updated_at)}
             </span>
           </div>
-          <h1 className="truncate text-2xl font-semibold tracking-tight">
+          <h1
+            dir="auto"
+            className="truncate text-2xl font-semibold tracking-tight"
+          >
             {v.title}
           </h1>
           {v.caption ? (
-            <p className="mt-1 max-w-2xl text-sm text-[var(--muted)]">
+            <p
+              dir="auto"
+              className="mt-1 max-w-2xl text-sm text-[var(--muted)]"
+            >
               {v.caption}
             </p>
           ) : null}
@@ -109,7 +115,9 @@ export default async function VideoPage({
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-rose-300">
             Revision note from creator
           </p>
-          <p className="text-sm text-rose-200/90">{v.revision_note}</p>
+          <p dir="auto" className="text-sm text-rose-200/90">
+            {v.revision_note}
+          </p>
         </div>
       ) : null}
 
@@ -164,9 +172,13 @@ export default async function VideoPage({
         className="mt-6"
       >
         {v.script ? (
-          <pre className="scrollbar-thin max-h-96 overflow-y-auto whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-[var(--foreground)]/90">
-            {v.script}
-          </pre>
+          <div className="scrollbar-thin max-h-96 space-y-3 overflow-y-auto font-mono text-[13px] leading-relaxed text-[var(--foreground)]/90">
+            {v.script.split(/\n{2,}/).map((para, i) => (
+              <p key={i} dir="auto" className="whitespace-pre-wrap">
+                {para}
+              </p>
+            ))}
+          </div>
         ) : (
           <p className="text-sm text-[var(--muted)]">
             No script yet. Click <em>Edit details</em> to add one.

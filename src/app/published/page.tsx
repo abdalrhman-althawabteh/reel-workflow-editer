@@ -62,7 +62,9 @@ export default async function PublishedPage() {
                   className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 transition hover:border-[var(--border)] hover:bg-[var(--background-elev)]"
                 >
                   <Circle size={16} className="text-[var(--muted)]" />
-                  <span className="flex-1 truncate text-sm">{v.title}</span>
+                  <span dir="auto" className="flex-1 truncate text-sm">
+                    {v.title}
+                  </span>
                   <StatusBadge status={v.status as Status} />
                   <span className="text-xs text-[var(--muted)]">
                     {timeAgo(v.updated_at)}
@@ -96,6 +98,7 @@ export default async function PublishedPage() {
                 <CheckCircle2 size={16} className="text-emerald-400" />
                 <Link
                   href={`/video/${v.id}`}
+                  dir="auto"
                   className="flex-1 truncate text-sm hover:underline"
                 >
                   {v.title}

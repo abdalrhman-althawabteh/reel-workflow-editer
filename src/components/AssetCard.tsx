@@ -86,7 +86,10 @@ export function AssetCard({
       </div>
 
       <div className="p-3.5">
-        <h3 className="line-clamp-2 text-sm font-medium leading-snug">
+        <h3
+          dir="auto"
+          className="line-clamp-2 text-sm font-medium leading-snug"
+        >
           {video.title}
         </h3>
         <p className="mt-1 text-[11px] text-[var(--muted)]">

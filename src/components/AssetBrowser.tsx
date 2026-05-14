@@ -281,7 +281,7 @@ function AssetList({
                     {yourTurn ? (
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
                     ) : null}
-                    <span className="truncate">{v.title}</span>
+                    <span dir="auto" className="truncate">{v.title}</span>
                   </Link>
                 </td>
                 <td className="px-4 py-2.5">

@@ -35,6 +35,7 @@ export function NewIdeaForm() {
       <Field label="Title" required>
         <input
           required
+          dir="auto"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="3 mistakes in your first React app"
@@ -43,6 +44,7 @@ export function NewIdeaForm() {
       </Field>
       <Field label="Caption" hint="Will go under the post when published.">
         <textarea
+          dir="auto"
           rows={2}
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
@@ -64,6 +66,7 @@ export function NewIdeaForm() {
       <Field label="Script" required>
         <textarea
           required
+          dir="auto"
           rows={12}
           value={script}
           onChange={(e) => setScript(e.target.value)}

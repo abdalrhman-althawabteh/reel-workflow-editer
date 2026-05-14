@@ -157,7 +157,10 @@ export function CommentsPanel({
                     {timeAgo(c.created_at)}
                   </span>
                 </div>
-                <p className="pl-7 text-sm leading-relaxed text-[var(--foreground)]/90">
+                <p
+                  dir="auto"
+                  className="pl-7 text-sm leading-relaxed text-[var(--foreground)]/90"
+                >
                   {c.body}
                 </p>
               </article>
@@ -195,6 +198,7 @@ export function CommentsPanel({
         ) : null}
         <textarea
           ref={inputRef}
+          dir="auto"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder={

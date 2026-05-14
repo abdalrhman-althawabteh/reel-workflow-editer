@@ -95,6 +95,7 @@ export function EditDetailsButton({ video }: { video: Video }) {
             <Field label="Title" required>
               <input
                 required
+                dir="auto"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className={inputCls}
@@ -102,6 +103,7 @@ export function EditDetailsButton({ video }: { video: Video }) {
             </Field>
             <Field label="Caption">
               <textarea
+                dir="auto"
                 rows={2}
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
@@ -118,6 +120,7 @@ export function EditDetailsButton({ video }: { video: Video }) {
             </Field>
             <Field label="Script">
               <textarea
+                dir="auto"
                 rows={10}
                 value={script}
                 onChange={(e) => setScript(e.target.value)}

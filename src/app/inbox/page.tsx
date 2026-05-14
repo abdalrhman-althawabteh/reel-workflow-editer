@@ -73,7 +73,10 @@ export default async function InboxPage() {
                       {KIND_LABELS[r.kind] ?? r.kind}
                     </span>
                     {v?.title ? (
-                      <span className="text-[var(--muted)]"> · {v.title}</span>
+                      <span dir="auto" className="text-[var(--muted)]">
+                        {" "}
+                        · {v.title}
+                      </span>
                     ) : null}
                   </p>
                 </div>
