@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, PlusCircle, CheckSquare, LayoutGrid, Inbox } from "lucide-react";
+import { LogOut, PlusCircle, CheckSquare, LayoutGrid, Inbox, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Profile, Video } from "@/lib/types";
 import { InboxBadge } from "./InboxBadge";
@@ -69,6 +69,9 @@ export function NavShell({
             </NavItem>
             <NavItem href="/published" icon={<CheckSquare size={14} />}>
               Published
+            </NavItem>
+            <NavItem href="/docs/content-guide" icon={<BookOpen size={14} />}>
+              Guide
             </NavItem>
             {profile.role === "editor" && (
               <NavItem href="/new" icon={<PlusCircle size={14} />}>
