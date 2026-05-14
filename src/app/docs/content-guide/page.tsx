@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
-import { ContentGuide } from "@/components/ContentGuide";
+import ContentGuideClient from "@/components/content-guide/ContentGuideClient";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default async function ContentGuidePage() {
 
   return (
     <AppShell profile={profile} unread={unread ?? 0}>
-      <ContentGuide />
+      <ContentGuideClient />
     </AppShell>
   );
 }
