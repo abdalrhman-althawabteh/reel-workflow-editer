@@ -9,7 +9,6 @@ export default async function NewIdea() {
   const { user, profile, supabase } = await requireUser();
   if (!user) redirect("/login");
   if (!profile) redirect("/login");
-  if (profile.role !== "editor") redirect("/");
 
   const { count: unread } = await supabase
     .from("activity")

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Film, Music, Layers, Scissors } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Film, Music, Layers, Scissors, Trash2 } from "lucide-react";
 import type { VideoFile } from "@/lib/types";
 import { CommentsPanel } from "./CommentsPanel";
 import { DownloadButton } from "./DownloadButton";
@@ -53,12 +54,15 @@ function sortedAssets(files: VideoFile[]): VideoFile[] {
 }
 
 export function VideoStudio({
+  videoId,
   files,
   authorMap,
 }: {
+  videoId: string;
   files: VideoFile[];
   authorMap: Record<string, Author>;
 }) {
+  const router = useRouter();
   const ordered = useMemo(() => sortedAssets(files), [files]);
   // User's manual pick — null until they click a tab. The actual selected
   // file is derived during render so it stays in sync when files change.
@@ -66,10 +70,31 @@ export function VideoStudio({
   // Callback ref — React invokes this with the element on mount/unmount, and
   // the state change triggers re-render so CommentsPanel sees the live element.
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const picked = pickedId ? ordered.find((f) => f.id === pickedId) : null;
   const selected = picked ?? pickDefault(ordered);
   const selectedId = selected?.id ?? null;
+
+  async function deleteFile(fileId: string) {
+    setDeletingId(fileId);
+    setDeleteError(null);
+    const res = await fetch(`/api/videos/${videoId}/files/${fileId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setDeleteError(j.error ?? "delete failed");
+      setDeletingId(null);
+      return;
+    }
+    setConfirmDeleteId(null);
+    setDeletingId(null);
+    if (pickedId === fileId) setPickedId(null);
+    router.refresh();
+  }
 
   if (!selected) {
     return (
@@ -123,8 +148,49 @@ export function VideoStudio({
               <span>· {formatBytes(selected.size_bytes)}</span>
             ) : null}
           </div>
-          <DownloadButton fileId={selected.drive_file_id} />
+          <div className="flex items-center gap-2">
+            <DownloadButton fileId={selected.drive_file_id} />
+            {confirmDeleteId === selected.id ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-rose-300">
+                Delete this file?
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteId(null)}
+                  disabled={deletingId === selected.id}
+                  className="rounded px-1.5 py-0.5 text-[11px] text-[var(--muted)] hover:text-[var(--foreground)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteFile(selected.id)}
+                  disabled={deletingId === selected.id}
+                  className="rounded bg-rose-500 px-1.5 py-0.5 text-[11px] font-medium text-white hover:bg-rose-400 disabled:opacity-50"
+                >
+                  {deletingId === selected.id ? "Deleting…" : "Confirm"}
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteError(null);
+                  setConfirmDeleteId(selected.id);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--background-elev)] px-2 py-1 text-[var(--muted)] transition hover:border-rose-500/40 hover:text-rose-300"
+                title="Delete this file (project + script untouched)"
+              >
+                <Trash2 size={12} />
+                Delete file
+              </button>
+            )}
+          </div>
         </div>
+        {deleteError ? (
+          <p className="rounded-md border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-[11px] text-rose-300">
+            {deleteError}
+          </p>
+        ) : null}
 
         {/* Asset tabs strip */}
         {ordered.length > 1 ? (

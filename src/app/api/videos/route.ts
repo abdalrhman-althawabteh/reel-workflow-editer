@@ -15,9 +15,6 @@ export async function POST(request: Request) {
   if (!user || !profile) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
   }
-  if (profile.role !== "editor") {
-    return NextResponse.json({ error: "only editors can create ideas" }, { status: 403 });
-  }
 
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {
@@ -44,16 +41,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error?.message ?? "insert failed" }, { status: 500 });
   }
 
-  // Notify the creator
+  // Notify the *other* role so they see the new idea in their inbox.
+  const otherRole = profile.role === "creator" ? "editor" : "creator";
   const admin = createAdmin();
-  const { data: creator } = await admin
+  const { data: other } = await admin
     .from("profiles")
     .select("user_id")
-    .eq("role", "creator")
+    .eq("role", otherRole)
     .maybeSingle();
-  if (creator) {
+  if (other) {
     await admin.from("activity").insert({
-      user_id: creator.user_id,
+      user_id: other.user_id,
       video_id: video.id,
       kind: "idea_proposed",
     });

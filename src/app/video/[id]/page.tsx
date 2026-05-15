@@ -122,7 +122,7 @@ export default async function VideoPage({
       ) : null}
 
       {/* Studio: player + asset tabs + comments rail */}
-      <VideoStudio files={allFiles} authorMap={authorMap} />
+      <VideoStudio videoId={v.id} files={allFiles} authorMap={authorMap} />
 
       {/* Status actions + meta strip */}
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_360px]">
@@ -186,15 +186,13 @@ export default async function VideoPage({
         )}
       </CollapsibleSection>
 
-      {/* Upload zones */}
-      {profile.role === "creator" &&
-      v.status !== "approved" &&
-      v.status !== "published" ? (
+      {/* Upload zones — both roles can upload anytime except published */}
+      {v.status !== "published" ? (
         <section className="mt-6">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
             Add to this project
           </h2>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <DriveUploader
               videoId={v.id}
               kind="raw"
@@ -213,26 +211,13 @@ export default async function VideoPage({
               label={bRollCount > 0 ? "Add more B-roll" : "Add B-roll"}
               accept="video/*"
             />
+            <DriveUploader
+              videoId={v.id}
+              kind="edit"
+              label="Upload edit"
+              accept="video/*"
+            />
           </div>
-        </section>
-      ) : null}
-
-      {profile.role === "editor" &&
-      (v.status === "editing" || v.status === "revisions_requested") ? (
-        <section className="mt-6">
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
-            Upload your edit
-          </h2>
-          <DriveUploader
-            videoId={v.id}
-            kind="edit"
-            label={
-              v.status === "revisions_requested"
-                ? "Upload revision"
-                : "Upload finished edit"
-            }
-            accept="video/*"
-          />
         </section>
       ) : null}
 

@@ -31,13 +31,15 @@ export function DeleteVideoButton({ videoId }: { videoId: string }) {
           onClick={() => setArmed(true)}
           className="inline-flex items-center gap-1.5 text-rose-300 transition hover:text-rose-200"
         >
-          <Trash2 size={13} /> Delete this video
+          <Trash2 size={13} /> Delete entire project
         </button>
       ) : (
         <div className="space-y-2">
           <p className="text-rose-200/90 leading-relaxed">
-            This removes the video, its files, and all comments. Drive files go
-            to your Drive trash (recoverable for 30 days, then auto-deleted).
+            This removes the <strong>whole project</strong> — title, script,
+            every uploaded file, and all comments. To delete a single file
+            without losing the project, use the “Delete file” button under
+            the player. Drive files go to trash (recoverable for 30 days).
           </p>
           <div className="flex gap-2">
             <button

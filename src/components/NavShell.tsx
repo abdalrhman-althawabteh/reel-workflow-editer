@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, PlusCircle, CheckSquare, LayoutGrid, Inbox, BookOpen } from "lucide-react";
+import { LogOut, PlusCircle, CheckSquare, LayoutGrid, Inbox, BookOpen, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Profile, Video } from "@/lib/types";
 import { InboxBadge } from "./InboxBadge";
@@ -70,14 +70,15 @@ export function NavShell({
             <NavItem href="/published" icon={<CheckSquare size={14} />}>
               Published
             </NavItem>
+            <NavItem href="/b-rolls" icon={<Layers size={14} />}>
+              B-rolls
+            </NavItem>
             <NavItem href="/docs/content-guide" icon={<BookOpen size={14} />}>
               Guide
             </NavItem>
-            {profile.role === "editor" && (
-              <NavItem href="/new" icon={<PlusCircle size={14} />}>
-                New idea
-              </NavItem>
-            )}
+            <NavItem href="/new" icon={<PlusCircle size={14} />}>
+              New idea
+            </NavItem>
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
