@@ -4,6 +4,7 @@ import { Layers, Play } from "lucide-react";
 import { requireUser } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 import { DownloadButton } from "@/components/DownloadButton";
+import { BRollUploadPanel } from "@/components/BRollUploadPanel";
 import { formatBytes, timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,14 @@ export default async function BRollsPage() {
     )
     .eq("kind", "b_roll")
     .order("created_at", { ascending: false });
+
+  // Projects the user can pick from when uploading a new B-roll inline.
+  // Exclude published projects (locked for further uploads).
+  const { data: projects } = await supabase
+    .from("videos")
+    .select("id, title, status")
+    .neq("status", "published")
+    .order("updated_at", { ascending: false });
 
   const { count: unread } = await supabase
     .from("activity")
@@ -72,6 +81,15 @@ export default async function BRollsPage() {
         ) : null}
       </div>
 
+      <div className="mb-6">
+        <BRollUploadPanel
+          projects={(projects ?? []).map((p) => ({
+            id: p.id as string,
+            title: p.title as string,
+          }))}
+        />
+      </div>
+
       {totalCount === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--background-elev)]/40 py-16 text-center">
           <Layers
@@ -79,7 +97,8 @@ export default async function BRollsPage() {
             className="mx-auto mb-3 text-[var(--muted-2)]"
           />
           <p className="text-sm text-[var(--muted)]">
-            No B-rolls uploaded yet. Add some from any project page.
+            No B-rolls uploaded yet. Use the panel above to add one to any
+            project.
           </p>
         </div>
       ) : (
