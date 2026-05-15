@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Trash2, Plus, X, ExternalLink } from "lucide-react";
+import { Play, Trash2, Plus, X, ExternalLink, Film } from "lucide-react";
 import { DriveUploader } from "./DriveUploader";
 import { DownloadButton } from "./DownloadButton";
 import { formatBytes, timeAgo } from "@/lib/utils";
@@ -89,7 +89,7 @@ export function BRollLibrary({
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {initial.map((r) => (
             <BRollTile
               key={r.id}
@@ -128,42 +128,77 @@ function BRollTile({
   onConfirmDelete: () => void;
   canDelete: boolean;
 }) {
+  const [playing, setPlaying] = useState(false);
+  const [thumbBroken, setThumbBroken] = useState(false);
+
   return (
     <div className="group overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background-elev)]/60 transition hover:border-[var(--accent)]/40">
-      <a
-        href={row.drive_web_view_link ?? "#"}
-        target={row.drive_web_view_link ? "_blank" : undefined}
-        rel="noreferrer"
-        className="relative block aspect-video overflow-hidden bg-black"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/api/drive/thumbnail?file_id=${row.drive_file_id}`}
-          alt={row.name}
-          className="h-full w-full object-cover transition group-hover:scale-[1.02]"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 grid place-items-center bg-black/0 transition group-hover:bg-black/30">
-          <Play
-            size={24}
-            className="text-white opacity-0 transition group-hover:opacity-100"
-          />
-        </div>
-      </a>
-      <div className="space-y-1 px-3 py-2">
+      <div className="relative aspect-[9/16] overflow-hidden bg-black">
+        {playing ? (
+          <>
+            <video
+              src={`/api/drive/stream?file_id=${row.drive_file_id}`}
+              controls
+              autoPlay
+              playsInline
+              className="h-full w-full object-contain"
+            />
+            <button
+              type="button"
+              onClick={() => setPlaying(false)}
+              className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80"
+              aria-label="Close player"
+            >
+              <X size={13} />
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="absolute inset-0 block w-full"
+            aria-label={`Play ${row.name}`}
+          >
+            {!thumbBroken ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/drive/thumbnail?file_id=${row.drive_file_id}`}
+                alt=""
+                className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                loading="lazy"
+                onError={() => setThumbBroken(true)}
+              />
+            ) : (
+              <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[var(--accent)]/20 via-black to-[var(--olive)]/15">
+                <Film
+                  size={26}
+                  className="text-white/40"
+                  aria-hidden
+                />
+              </div>
+            )}
+            <span className="absolute inset-0 grid place-items-center bg-black/0 transition group-hover:bg-black/30">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-white/15 backdrop-blur opacity-0 transition group-hover:opacity-100">
+                <Play size={18} className="ml-0.5 text-white" />
+              </span>
+            </span>
+          </button>
+        )}
+      </div>
+      <div className="space-y-1 px-2.5 py-2">
         <p
           dir="auto"
-          className="truncate text-sm font-medium"
+          className="truncate text-[12px] font-medium"
           title={row.name}
         >
           {row.name}
         </p>
-        <div className="flex items-center justify-between text-[11px] text-[var(--muted)]">
-          <span>
+        <div className="flex items-center justify-between text-[10px] text-[var(--muted)]">
+          <span className="truncate">
             {row.size_bytes ? formatBytes(row.size_bytes) : "—"} ·{" "}
             {timeAgo(row.created_at)}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             {row.drive_web_view_link ? (
               <a
                 href={row.drive_web_view_link}
@@ -172,7 +207,7 @@ function BRollTile({
                 title="Open in Drive"
                 className="grid h-6 w-6 place-items-center rounded text-[var(--muted)] hover:bg-[var(--background-elev-2)] hover:text-[var(--foreground)]"
               >
-                <ExternalLink size={11} />
+                <ExternalLink size={10} />
               </a>
             ) : null}
             <DownloadButton fileId={row.drive_file_id} />
@@ -203,7 +238,7 @@ function BRollTile({
                   title="Delete B-roll"
                   className="grid h-6 w-6 place-items-center rounded text-[var(--muted)] hover:bg-rose-500/15 hover:text-rose-300"
                 >
-                  <Trash2 size={11} />
+                  <Trash2 size={10} />
                 </button>
               )
             ) : null}

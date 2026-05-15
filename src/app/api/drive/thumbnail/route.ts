@@ -28,16 +28,28 @@ export async function GET(request: NextRequest) {
   const accessToken = await getAccessToken(refreshToken);
 
   const metaRes = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${fileId}?fields=thumbnailLink,mimeType`,
+    `https://www.googleapis.com/drive/v3/files/${fileId}?fields=thumbnailLink,hasThumbnail,mimeType`,
     { headers: { Authorization: `Bearer ${accessToken}` } },
   );
   if (!metaRes.ok) return new NextResponse(null, { status: 404 });
 
-  const meta = (await metaRes.json()) as { thumbnailLink?: string };
-  if (!meta.thumbnailLink) return new NextResponse(null, { status: 404 });
+  const meta = (await metaRes.json()) as {
+    thumbnailLink?: string;
+    hasThumbnail?: boolean;
+  };
 
-  // Bump thumb size — Drive default is 220px; ask for 640px for sharper cards
-  const thumbUrl = meta.thumbnailLink.replace(/=s\d+$/, "=s640");
+  // Drive returns a generic file-type icon as `thumbnailLink` even when the
+  // real thumbnail isn't ready yet. The `hasThumbnail` flag is the source of
+  // truth — short-circuit to 404 when false so the client falls back to a
+  // proper placeholder instead of rendering Drive's icon as a poster.
+  if (!meta.hasThumbnail || !meta.thumbnailLink) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  // Ask for a portrait crop (9:16-ish) so vertical Reel clips look right.
+  // The =s/=w syntax is documented at
+  // https://developers.google.com/people/image-sizing
+  const thumbUrl = meta.thumbnailLink.replace(/=s\d+$|=w\d+(-h\d+)?$/, "=w400-h720");
 
   const thumbRes = await fetch(thumbUrl, {
     headers: { Authorization: `Bearer ${accessToken}` },
