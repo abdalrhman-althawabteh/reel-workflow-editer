@@ -30,6 +30,41 @@ export async function ensureRootFolder(refreshToken: string) {
   return created.data.id;
 }
 
+const B_ROLLS_FOLDER_NAME = "B-rolls Library";
+
+// Ensures (and caches) a "B-rolls Library" subfolder under the workspace root,
+// then returns its Drive folder id.
+export async function ensureBRollsFolder(
+  refreshToken: string,
+  rootFolderId: string,
+) {
+  const auth = makeOAuth2();
+  auth.setCredentials({ refresh_token: refreshToken });
+  const drive = google.drive({ version: "v3", auth });
+
+  const { data } = await drive.files.list({
+    q: `name='${B_ROLLS_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and '${rootFolderId}' in parents and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+
+  if (data.files && data.files.length > 0 && data.files[0].id) {
+    return data.files[0].id;
+  }
+
+  const created = await drive.files.create({
+    requestBody: {
+      name: B_ROLLS_FOLDER_NAME,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [rootFolderId],
+    },
+    fields: "id",
+  });
+
+  if (!created.data.id) throw new Error("Failed to create B-rolls folder");
+  return created.data.id;
+}
+
 // Mints a Drive resumable upload session URL. Browser will PUT bytes directly.
 // Docs: https://developers.google.com/drive/api/guides/manage-uploads#resumable
 export async function createResumableUploadSession({

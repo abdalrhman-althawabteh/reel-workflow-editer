@@ -30,17 +30,25 @@ type QueueItem = {
   errorMessage?: string;
 };
 
-export function DriveUploader({
-  videoId,
-  kind,
-  label,
-  accept,
-}: {
-  videoId: string;
-  kind: FileKind;
-  label: string;
-  accept?: string;
-}) {
+type DriveUploaderProps =
+  | {
+      target?: "video";
+      videoId: string;
+      kind: FileKind;
+      label: string;
+      accept?: string;
+    }
+  | {
+      target: "library";
+      label: string;
+      accept?: string;
+    };
+
+export function DriveUploader(props: DriveUploaderProps) {
+  const { label, accept } = props;
+  const isLibrary = props.target === "library";
+  const videoId = isLibrary ? null : props.videoId;
+  const kind: FileKind = isLibrary ? "b_roll" : props.kind;
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -71,11 +79,16 @@ export function DriveUploader({
         q.map((x) => (x.id === item.id ? { ...x, status: "uploading" } : x)),
       );
       try {
-        await uploadOne(item.file, videoId, kind, (p) => {
+        const onProgress = (p: number) => {
           setQueue((q) =>
             q.map((x) => (x.id === item.id ? { ...x, progress: p } : x)),
           );
-        });
+        };
+        if (isLibrary) {
+          await uploadOneToLibrary(item.file, onProgress);
+        } else {
+          await uploadOne(item.file, videoId!, kind, onProgress);
+        }
         setQueue((q) =>
           q.map((x) =>
             x.id === item.id ? { ...x, status: "done", progress: 100 } : x,
@@ -207,6 +220,43 @@ function QueueRow({ item }: { item: QueueItem }) {
       ) : null}
     </div>
   );
+}
+
+async function uploadOneToLibrary(
+  file: File,
+  onProgress: (p: number) => void,
+): Promise<void> {
+  // 1. Mint resumable session URL (library endpoint — no videoId)
+  const sessionRes = await fetch("/api/b-rolls/upload-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      mime_type: file.type || "application/octet-stream",
+      size: file.size,
+    }),
+  });
+  if (!sessionRes.ok) {
+    throw new Error((await sessionRes.json()).error ?? "session error");
+  }
+  const { session_url } = await sessionRes.json();
+
+  // 2. Stream chunks to Drive
+  const driveFileId = await uploadInChunks(file, session_url, (sent) =>
+    onProgress(Math.min(99, Math.round((sent / file.size) * 100))),
+  );
+
+  // 3. Record into the b_rolls library
+  const recordRes = await fetch("/api/b-rolls", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ drive_file_id: driveFileId }),
+  });
+  if (!recordRes.ok) {
+    throw new Error((await recordRes.json()).error ?? "record error");
+  }
+
+  onProgress(100);
 }
 
 async function uploadOne(

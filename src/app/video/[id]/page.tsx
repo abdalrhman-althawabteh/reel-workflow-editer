@@ -192,7 +192,7 @@ export default async function VideoPage({
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
             Add to this project
           </h2>
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-3">
             <DriveUploader
               videoId={v.id}
               kind="raw"
@@ -207,17 +207,21 @@ export default async function VideoPage({
             />
             <DriveUploader
               videoId={v.id}
-              kind="b_roll"
-              label={bRollCount > 0 ? "Add more B-roll" : "Add B-roll"}
-              accept="video/*"
-            />
-            <DriveUploader
-              videoId={v.id}
               kind="edit"
               label="Upload edit"
               accept="video/*"
             />
           </div>
+          <p className="mt-3 text-xs text-[var(--muted)]">
+            B-rolls live in the shared{" "}
+            <a
+              href="/b-rolls"
+              className="text-[var(--accent)] underline-offset-2 hover:underline"
+            >
+              B-rolls library
+            </a>
+            , not per-project.
+          </p>
         </section>
       ) : null}
 
