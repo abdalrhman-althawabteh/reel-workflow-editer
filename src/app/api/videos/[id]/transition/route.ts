@@ -8,8 +8,12 @@ const Body = z.object({
   to: z.enum(STATUSES),
   note: z.string().max(2000).optional(),
   publish_url: z.string().url().optional(),
-  // when transitioning into a state that requires a fresh upload
-  // the file row should already be inserted via /files endpoint first
+  // Creator-only override. When true, skips the state-machine check
+  // (and the requires-note / requires-publish-url gates) so the creator
+  // can jump a project to any status manually — useful when the editor's
+  // automated flow doesn't match reality (e.g. they edited offline, or a
+  // project was recreated after an accidental delete).
+  force: z.boolean().optional(),
 });
 
 export async function POST(
@@ -29,18 +33,28 @@ export async function POST(
   const { data: video } = await supabase.from("videos").select("*").eq("id", id).maybeSingle();
   if (!video) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const t = findTransition(video.status as Status, parsed.data.to, profile.role);
-  if (!t) {
+  if (parsed.data.force === true && profile.role !== "creator") {
     return NextResponse.json(
-      { error: `transition not allowed: ${video.status} → ${parsed.data.to} as ${profile.role}` },
+      { error: "only the creator can force a status override" },
       { status: 403 },
     );
   }
-  if (t.requires === "note" && !parsed.data.note) {
-    return NextResponse.json({ error: "note required" }, { status: 400 });
-  }
-  if (t.requires === "publish_url" && !parsed.data.publish_url) {
-    return NextResponse.json({ error: "publish_url required" }, { status: 400 });
+  const isForce = parsed.data.force === true;
+
+  if (!isForce) {
+    const t = findTransition(video.status as Status, parsed.data.to, profile.role);
+    if (!t) {
+      return NextResponse.json(
+        { error: `transition not allowed: ${video.status} → ${parsed.data.to} as ${profile.role}` },
+        { status: 403 },
+      );
+    }
+    if (t.requires === "note" && !parsed.data.note) {
+      return NextResponse.json({ error: "note required" }, { status: 400 });
+    }
+    if (t.requires === "publish_url" && !parsed.data.publish_url) {
+      return NextResponse.json({ error: "publish_url required" }, { status: 400 });
+    }
   }
 
   const update: Record<string, unknown> = { status: parsed.data.to };

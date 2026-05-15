@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, RotateCcw, Send, Globe2 } from "lucide-react";
-import type { Role, Status } from "@/lib/status";
+import { Check, RotateCcw, Send, Globe2, SlidersHorizontal } from "lucide-react";
+import { STATUSES, STATUS_META, type Role, type Status } from "@/lib/status";
 import type { Video } from "@/lib/types";
 
 export function StatusActions({ video, role }: { video: Video; role: Role }) {
@@ -31,6 +31,11 @@ export function StatusActions({ video, role }: { video: Video; role: Role }) {
     setRevisionDialog(false);
     setPublishDialog(false);
     router.refresh();
+  }
+
+  async function forceStatus(to: Status) {
+    if (to === video.status) return;
+    await transition(to, { force: true });
   }
 
   const status = video.status as Status;
@@ -113,6 +118,34 @@ export function StatusActions({ video, role }: { video: Video; role: Role }) {
       ) : (
         <div className="flex flex-wrap gap-2">{buttons}</div>
       )}
+
+      {role === "creator" ? (
+        <div className="mt-2 rounded-lg border border-dashed border-[var(--border)] bg-[var(--background-elev-2)]/40 p-2.5">
+          <label className="flex flex-wrap items-center gap-2 text-[11px]">
+            <span className="inline-flex items-center gap-1 uppercase tracking-wider text-[var(--muted)]">
+              <SlidersHorizontal size={11} />
+              Override status
+            </span>
+            <select
+              value={video.status}
+              onChange={(e) => forceStatus(e.target.value as Status)}
+              disabled={busy}
+              className="flex-1 min-w-[180px] rounded-md border border-[var(--border)] bg-[var(--background-elev)] px-2 py-1 text-xs focus:border-[var(--accent)]/50 focus:outline-none disabled:opacity-50"
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_META[s].label}
+                  {s === video.status ? "  · current" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mt-1.5 text-[10px] text-[var(--muted)]">
+            Bypasses the normal workflow. Use when the project state
+            doesn&apos;t match reality.
+          </p>
+        </div>
+      ) : null}
       {error ? (
         <p className="rounded-md border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs text-rose-300">
           {error}
