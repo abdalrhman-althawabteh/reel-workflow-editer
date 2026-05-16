@@ -3,11 +3,13 @@ import { requireUser } from "@/lib/supabase/server";
 import { createAdmin } from "@/lib/supabase/admin";
 import { decryptToken } from "@/lib/drive/encrypt-token";
 import { getAccessToken } from "@/lib/drive/oauth";
+import { driveErrorResponse } from "@/lib/drive/route-error";
 
 // Streams a Drive file inline for `<video>` playback. Forwards Range headers
 // so the browser can seek. Auth via Authorization header (not URL query) — that
 // avoids Google's "We're sorry" anti-bot block we hit before.
 export async function GET(request: NextRequest) {
+  try {
   const { user } = await requireUser();
   if (!user) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
@@ -59,4 +61,7 @@ export async function GET(request: NextRequest) {
     status: driveRes.status,
     headers,
   });
+  } catch (err) {
+    return driveErrorResponse(err);
+  }
 }

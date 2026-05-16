@@ -8,6 +8,7 @@ import { getAccessToken } from "@/lib/drive/oauth";
 // is signed and short-lived, so we fetch a fresh metadata pull each time and
 // re-stream the image. Browser caching (Cache-Control) absorbs the load.
 export async function GET(request: NextRequest) {
+  try {
   const { user } = await requireUser();
   if (!user) return new NextResponse(null, { status: 401 });
 
@@ -63,4 +64,8 @@ export async function GET(request: NextRequest) {
       "Cache-Control": "private, max-age=3600",
     },
   });
+  } catch (err) {
+    console.error("[drive thumbnail]", err);
+    return new NextResponse(null, { status: 500 });
+  }
 }

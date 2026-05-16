@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { createAdmin } from "@/lib/supabase/admin";
 import { decryptToken } from "@/lib/drive/encrypt-token";
 import { getAccessToken } from "@/lib/drive/oauth";
+import { driveErrorResponse } from "@/lib/drive/route-error";
 
 // Streams a Drive file with Content-Disposition: attachment so the browser
 // triggers a Save dialog. CRITICAL: uses the file's real name + mime type from
@@ -10,6 +11,7 @@ import { getAccessToken } from "@/lib/drive/oauth";
 // original (e.g. IMG_1234.MOV / video/quicktime — not renamed to .mp4, which
 // would break HEVC color profile handling on macOS).
 export async function GET(request: NextRequest) {
+  try {
   const { user } = await requireUser();
   if (!user) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
@@ -110,4 +112,7 @@ export async function GET(request: NextRequest) {
     status: driveRes.status,
     headers,
   });
+  } catch (err) {
+    return driveErrorResponse(err);
+  }
 }
